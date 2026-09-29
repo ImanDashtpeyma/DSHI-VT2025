@@ -86,15 +86,30 @@ The two files are merged into `Data/combined_student_data.csv` (see also [`Test/
 
 `LR_1` confusion matrix `[[TN FP] [FN TP]]` = `[[10, 36], [6, 157]]`: it catches **10 of the 46** students who actually failed.
 
-**Conclusion:** scaled Logistic Regression had the best CV F1 and is the cheapest good model, so it is my recommendation. But the honest takeaway is that no model is meaningfully better than the naive baseline with these five features.
+**Conclusion (Scenario 1):** scaled Logistic Regression had the best CV F1 and is the cheapest good model, so it is my recommendation. But the honest takeaway is that no model is meaningfully better than the naive baseline with these five features, which motivated Scenario 2 below.
+
+### 🎯 Scenario 2: catching failing students
+
+Because accuracy/F1 on the majority class is misleading, I re-evaluated with metrics on the **failed** class, then tested two changes: **class weighting** (`class_weight='balanced'`) and adding the earlier grades **`G1`, `G2`**. Test-set results (209 students, 46 of whom failed):
+
+| Model | Features | Failed-class precision | Failed-class recall | ROC-AUC | Failing students caught |
+|---|---|---|---|---|---|
+| Baseline (always "pass") | 5 features | 0.00 | 0.00 | 0.50 | 0 / 46 |
+| Logistic Regression | 5 features | 0.63 | 0.22 | 0.70 | 10 / 46 |
+| Logistic Regression, **balanced** | 5 features | 0.45 | 0.41 | 0.70 | 19 / 46 |
+| Random Forest, **balanced** | + `G1`, `G2` | 0.70 | 0.89 | 0.96 | **41 / 46** |
+
+- Class weighting roughly **doubles recall** on failing students but lowers precision: a trade-off, and the 5-feature model stays weak (ROC-AUC ≈ 0.70).
+- Adding `G1`/`G2` makes the task far easier (CV ROC-AUC ≈ 0.97). Caveat: `G2` is close to the final grade, so this shows late-stage identification, not early prediction from behaviour or background.
+- With only 46 failing students in the test set these numbers are noisy; the CV results in the notebook rank the configurations the same way.
 
 ### ⚠️ Limitations & honest notes
 
-- **Barely above baseline.** About 78% of students pass, so "everyone passes" already scores ~78% accuracy and 0.876 F1. The best model reaches ~80% accuracy / 0.882 F1 on the test set, and most models have *lower* CV F1 than the baseline. The models spot only about a fifth of failing students (recall on the *failed* class ≈ 0.22).
-- **Differences between the top models are within noise** (≈0.004 F1 on ~835 training rows), so the ranking should not be over-interpreted.
+- **Scenario 1 is barely above baseline.** About 78% of students pass, so "everyone passes" already scores ~78% accuracy and 0.876 F1. The best model reaches ~80% accuracy / 0.882 F1 on the test set, and most models have *lower* CV F1 than the baseline.
+- **Differences between the top Scenario-1 models are within noise** (≈0.004 F1 on ~835 training rows), so the ranking should not be over-interpreted.
 - **Scaling was applied** (`StandardScaler` in a pipeline) but did not improve results on this data.
-- `G1` and `G2` (earlier grades) were intentionally **not** used as features; they would make prediction much easier but far less useful for early intervention.
-- **Next steps:** stronger features (e.g. `G1`/`G2` or more social variables), class weighting or threshold tuning to improve recall on failing students, and ROC-AUC / per-class metrics instead of accuracy and F1 on the majority class.
+- **The `G1`/`G2` scenario is a different question** ("who will fail, given mid-year grades?"), and its strong results should not be read as early-warning performance.
+- **Next steps:** threshold tuning / probability calibration, stratified repeated CV for tighter confidence intervals, and an interpretable model (coefficients / feature importances) for the intervention use case.
 
 ## 🚀 Getting Started
 
@@ -124,7 +139,7 @@ DSHI-VT2025/
 
 ## 🛠️ Skills Demonstrated
 
-`Exploratory data analysis` · `Feature encoding` · `Stratified splitting` · `Class-imbalance awareness` · `Cross-validated model comparison` · `Classification (DT, RF, KNN, SVM, LR)` · `Result interpretation`
+`Exploratory data analysis` · `Feature encoding` · `Stratified splitting` · `Class-imbalance handling (class weighting)` · `Cross-validated model comparison` · `Classification (DT, RF, KNN, SVM, LR)` · `Result interpretation`
 
 ---
 
