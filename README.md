@@ -87,7 +87,7 @@ The two files are merged into `Data/combined_student_data.csv` (see also [`Test/
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/<your-username>/DSHI-VT2025.git
+git clone https://github.com/ImanDashtpeyma/DSHI-VT2025.git
 cd DSHI-VT2025
 pip install -r packages.txt
 jupyter notebook DSHI_HW3_Iman_Dashtpeyma.ipynb
