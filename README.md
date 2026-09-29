@@ -50,7 +50,8 @@ The two files are merged into `Data/combined_student_data.csv` (see also [`Test/
 
 **Target:** `passed = (G3 >= 10)` (about 78% of students pass, so the classes are imbalanced)
 **Features:** `studytime`, `failures`, `absences` (numeric) + `school`, `sex` (one-hot encoded)
-**Split:** 80/20 stratified train/test (`random_state=42`); models compared with 5-fold CV on the training set
+**Split:** 80/20 stratified train/test (`random_state=42`); models compared with stratified 5-fold CV on the training set (835 rows), plus a `DummyClassifier` majority-class **baseline**
+**Scaling:** `StandardScaler` inside a scikit-learn `Pipeline` for KNN, SVM and Logistic Regression (re-fit per CV fold, so no leakage); tree-based models are left unscaled
 
 | Algorithm | Variant 1 | Variant 2 |
 |---|---|---|
@@ -62,27 +63,38 @@ The two files are merged into `Data/combined_student_data.csv` (see also [`Test/
 
 ### Results (5-fold CV, sorted by F1)
 
-| Model | Accuracy | Precision | Recall | F1 | Fit time (s) |
-|---|---|---|---|---|---|
-| **SVM_2** (RBF) | 0.8096 | 0.8284 | 0.9539 | **0.8864** | 0.0126 |
-| **LR_1** | 0.8048 | 0.8181 | 0.9647 | 0.8851 | 0.0041 |
-| KNN_2 | 0.8060 | 0.8238 | 0.9554 | 0.8847 | 0.0012 |
-| SVM_1 (linear) | 0.8024 | 0.8153 | 0.9662 | 0.8839 | 0.0046 |
-| LR_2 | 0.7976 | 0.8099 | 0.9677 | 0.8817 | 0.0031 |
-| DT_1 | 0.7976 | 0.8270 | 0.9370 | 0.8782 | 0.0010 |
-| RF_2 | 0.7928 | 0.8208 | 0.9400 | 0.8761 | 0.0368 |
-| DT_2 | 0.7916 | 0.8374 | 0.9093 | 0.8716 | 0.0012 |
-| KNN_1 | 0.7749 | 0.8225 | 0.9079 | 0.8626 | 0.0010 |
-| RF_1 | 0.7749 | 0.8232 | 0.9063 | 0.8624 | 0.0790 |
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| **LR_1** | 0.8036 | 0.8170 | 0.9647 | **0.8845** |
+| LR_2 | 0.8024 | 0.8142 | 0.9678 | 0.8842 |
+| SVM_1 (linear) | 0.7988 | 0.8119 | 0.9662 | 0.8822 |
+| SVM_2 (RBF) | 0.8024 | 0.8302 | 0.9385 | 0.8810 |
+| RF_2 | 0.8000 | 0.8244 | 0.9447 | 0.8803 |
+| *Baseline (always "pass")* | *0.7796* | *0.7796* | *1.0000* | *0.8762* |
+| KNN_2 | 0.7892 | 0.8286 | 0.9201 | 0.8719 |
+| DT_1 | 0.7892 | 0.8294 | 0.9185 | 0.8715 |
+| DT_2 | 0.7868 | 0.8348 | 0.9062 | 0.8689 |
+| RF_1 | 0.7772 | 0.8235 | 0.9093 | 0.8642 |
+| KNN_1 | 0.7725 | 0.8244 | 0.9001 | 0.8605 |
 
-**Conclusion:** SVM with an RBF kernel scored best on F1, but Logistic Regression (`LR_1`) is within 0.0013 F1 at roughly a third of the training time, making it the more practical choice for deployment.
+### Held-out test set (209 students, evaluated once)
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Baseline (always "pass") | 0.7799 | 0.7799 | 1.0000 | 0.8763 |
+| **LR_1** (recommended) | 0.7990 | 0.8135 | 0.9632 | 0.8820 |
+
+`LR_1` confusion matrix `[[TN FP] [FN TP]]` = `[[10, 36], [6, 157]]`: it catches **10 of the 46** students who actually failed.
+
+**Conclusion:** scaled Logistic Regression had the best CV F1 and is the cheapest good model, so it is my recommendation. But the honest takeaway is that no model is meaningfully better than the naive baseline with these five features.
 
 ### ⚠️ Limitations & honest notes
 
-- **Small margin over a naive baseline.** About 78% of students pass, so a model that always predicts "pass" already reaches ~78% accuracy. The best models (~81%) improve only modestly, which is expected given only five simple features.
+- **Barely above baseline.** About 78% of students pass, so "everyone passes" already scores ~78% accuracy and 0.876 F1. The best model reaches ~80% accuracy / 0.882 F1 on the test set, and most models have *lower* CV F1 than the baseline. The models spot only about a fifth of failing students (recall on the *failed* class ≈ 0.22).
+- **Differences between the top models are within noise** (≈0.004 F1 on ~835 training rows), so the ranking should not be over-interpreted.
+- **Scaling was applied** (`StandardScaler` in a pipeline) but did not improve results on this data.
 - `G1` and `G2` (earlier grades) were intentionally **not** used as features; they would make prediction much easier but far less useful for early intervention.
-- Results are cross-validation scores on the training split; the held-out test set is reserved for a final evaluation of the chosen model.
-- Distance-based models (KNN, SVM) would likely benefit from feature scaling.
+- **Next steps:** stronger features (e.g. `G1`/`G2` or more social variables), class weighting or threshold tuning to improve recall on failing students, and ROC-AUC / per-class metrics instead of accuracy and F1 on the majority class.
 
 ## 🚀 Getting Started
 
