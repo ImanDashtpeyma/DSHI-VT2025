@@ -8,7 +8,7 @@
 ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)
 
 **Author:** Iman Dashtpeyma · Course: *Data Science for Health Informatics / Design* (VT2025)
-**Main notebook:** [`DSHI_HW3_Iman_Dashtpeyma.ipynb`](DSHI_HW3_Iman_Dashtpeyma.ipynb)
+**Main notebook:** [`student-success-classification.ipynb`](student-success-classification.ipynb)
 
 ---
 
@@ -90,7 +90,7 @@ The two files are merged into `Data/combined_student_data.csv` (see also [`Test/
 git clone https://github.com/ImanDashtpeyma/DSHI-VT2025.git
 cd DSHI-VT2025
 pip install -r packages.txt
-jupyter notebook DSHI_HW3_Iman_Dashtpeyma.ipynb
+jupyter notebook student-success-classification.ipynb
 ```
 
 Core libraries: `pandas`, `numpy`, `scikit-learn`, `matplotlib`, `seaborn`.
@@ -99,11 +99,12 @@ Core libraries: `pandas`, `numpy`, `scikit-learn`, `matplotlib`, `seaborn`.
 
 ```
 DSHI-VT2025/
-├── DSHI_HW3_Iman_Dashtpeyma.ipynb   # ⭐ Main project: EDA + classification
-├── DSHI_HW1_Iman_Dashtpeyma.ipynb   # EDA on the same dataset
-├── DSHI_HW2_Iman_Dashtpeyma.ipynb   # Clustering: K-Means & DBSCAN on synthetic data
-├── Lab2-ExploratoryDataAnalysis_EDA.ipynb
-├── Lab3-Clustering_UnsupervisedLearning.ipynb
+├── student-success-classification.ipynb   # ⭐ Main project: EDA + classification
+├── coursework/                      # Earlier course assignments & labs
+│   ├── DSHI_HW1_Iman_Dashtpeyma.ipynb   # EDA on the same dataset
+│   ├── DSHI_HW2_Iman_Dashtpeyma.ipynb   # Clustering: K-Means & DBSCAN on synthetic data
+│   ├── Lab2-ExploratoryDataAnalysis_EDA.ipynb
+│   └── Lab3-Clustering_UnsupervisedLearning.ipynb
 ├── Data/                            # Student and bank-marketing CSVs
 ├── Test/app.py                      # Script that merges the two student datasets
 └── packages.txt                     # Python dependencies
